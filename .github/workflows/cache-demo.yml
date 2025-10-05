@@ -1,0 +1,42 @@
+name: Dependency Cache Demo
+
+on:
+  workflow_dispatch:  # Allow manual run from GitHub UI
+  push:               # Also runs on every push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 1: Set up Python (or any runtime you use)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Step 2: Cache dependencies
+      - name: prime-cache-5603bba
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip  # cache location (for pip)
+          key: cache-5603bba-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            cache-5603bba-
+
+      # Step 3: Print cache hit or miss
+      - name: Show cache result
+        run: echo "Cache hit = ${{ steps.cache.outputs.cache-hit }}"
+
+      # Step 4: Install dependencies
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      # Step 5: Run a dummy script
+      - name: Run script
+        run: python -c "print('GitHub Actions cache test complete!')"
